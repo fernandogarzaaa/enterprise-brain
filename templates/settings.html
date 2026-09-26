@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Settings - {{ app_name }}{% endblock %}
+{% block nav %}
+<a href="/" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Ask</a>
+<a href="/sources" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Knowledge Sources</a>
+<a href="/insights" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Insights</a>
+<a href="/saved" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Saved Answers</a>
+<a href="/team" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Team</a>
+<a href="/settings" class="block px-3 py-2 rounded-lg bg-orange-100 text-orange-800 font-medium">Settings</a>
+{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold tracking-tight">Settings</h1>
+<p class="text-sm text-stone-500 mt-1 mb-6">Runtime configuration. Values come from environment variables (see <code class="bg-stone-100 px-1 rounded">.env</code>); restart to apply changes.</p>
+
+<div class="bg-white border border-stone-200 rounded-2xl shadow-sm overflow-hidden max-w-2xl">
+  <table class="w-full text-sm">
+    <tbody class="divide-y divide-stone-100">
+      {% for label, value in [
+        ('Application name', cfg.app_name),
+        ('Embeddings', cfg.embeddings ~ (' (sentence-transformers)' if cfg.embeddings == 'st' else ' (hashed, zero-dependency)')),
+        ('Vector store', cfg.vector_store),
+        ('LLM enhancement', ('enabled (' ~ cfg.llm_model ~ ')') if cfg.llm_configured else 'disabled (local extractive answers)'),
+        ('Database', cfg.database),
+        ('Upload directory', cfg.uploads),
+        ('Connector staging directory', cfg.staging),
+      ] %}
+      <tr>
+        <td class="px-5 py-3 text-stone-500 w-56">{{ label }}</td>
+        <td class="px-5 py-3 font-mono text-xs break-all">{{ value }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

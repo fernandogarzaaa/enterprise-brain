@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Team - {{ app_name }}{% endblock %}
+{% block nav %}
+<a href="/" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Ask</a>
+<a href="/sources" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Knowledge Sources</a>
+<a href="/insights" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Insights</a>
+<a href="/saved" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Saved Answers</a>
+<a href="/team" class="block px-3 py-2 rounded-lg bg-orange-100 text-orange-800 font-medium">Team</a>
+<a href="/settings" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Settings</a>
+{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold tracking-tight">Team</h1>
+<p class="text-sm text-stone-500 mt-1 mb-6">Everyone with access to this Enterprise Brain.</p>
+
+{% if is_admin %}
+<div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm mb-6">
+  <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">Invite a member</h2>
+  <form id="invite-form" class="flex flex-wrap items-center gap-3">
+    <input id="inv-name" type="text" placeholder="Name" class="text-sm border border-stone-200 rounded-xl px-3 py-2">
+    <input id="inv-email" type="email" placeholder="work email" required class="text-sm border border-stone-200 rounded-xl px-3 py-2 flex-1 min-w-52">
+    <button class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-xl">Send invite</button>
+  </form>
+  <p id="inv-msg" class="text-xs text-stone-500 mt-2">A member account is created immediately; the temporary password is shown once below.</p>
+</div>
+{% endif %}
+
+<div class="bg-white border border-stone-200 rounded-2xl shadow-sm overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-stone-50 text-xs uppercase text-stone-500">
+      <tr><th class="text-left px-5 py-3 font-medium">Name</th><th class="text-left px-5 py-3 font-medium">Email</th><th class="text-left px-5 py-3 font-medium">Role</th><th class="text-left px-5 py-3 font-medium">Joined</th></tr>
+    </thead>
+    <tbody class="divide-y divide-stone-100">
+      {% for m in members %}
+      <tr>
+        <td class="px-5 py-3">{{ m.name }}</td>
+        <td class="px-5 py-3 text-stone-600">{{ m.email }}</td>
+        <td class="px-5 py-3"><span class="text-[11px] px-2 py-0.5 rounded-full {{ 'bg-orange-100 text-orange-800' if m.role == 'admin' else 'bg-stone-100 text-stone-600' }}">{{ m.role }}</span></td>
+        <td class="px-5 py-3 text-stone-500">{{ m.created_at.strftime('%Y-%m-%d') if m.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+{% if is_admin %}
+<script>
+document.getElementById('invite-form').onsubmit = async e => {
+  e.preventDefault();
+  const msg = document.getElementById('inv-msg');
+  const r = await fetch('/api/team/invite', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name: document.getElementById('inv-name').value, email: document.getElementById('inv-email').value})});
+  const d = await r.json();
+  if(r.ok){
+    msg.innerHTML = `Invited <b>${d.email}</b>. Temporary password (share it once): <code class="bg-stone-100 px-2 py-0.5 rounded font-mono">${d.temporary_password}</code>`;
+    setTimeout(() => location.reload(), 4000);
+  } else msg.textContent = d.detail || 'Invite failed.';
+};
+</script>
+{% endif %}
+{% endblock %}

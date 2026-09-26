@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Knowledge Sources - {{ app_name }}{% endblock %}
+{% block nav %}
+<a href="/" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Ask</a>
+<a href="/sources" class="block px-3 py-2 rounded-lg bg-orange-100 text-orange-800 font-medium">Knowledge Sources</a>
+<a href="/insights" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Insights</a>
+<a href="/saved" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Saved Answers</a>
+<a href="/team" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Team</a>
+<a href="/settings" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Settings</a>
+{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold tracking-tight">Knowledge Sources</h1>
+<p class="text-sm text-stone-500 mt-1 mb-6">Upload documents or connect systems. Everything is chunked, embedded, and searchable.</p>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
+    <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">Upload document</h2>
+    <p class="text-xs text-stone-400 mb-3">PDF, TXT, Markdown, or CSV. Ingested immediately.</p>
+    <form id="upload-form" class="flex items-center gap-3">
+      <input id="file-input" type="file" accept=".pdf,.txt,.md,.csv" class="text-sm flex-1">
+      <button class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-xl">Upload</button>
+    </form>
+    <p id="upload-msg" class="text-xs text-stone-500 mt-2"></p>
+  </div>
+
+  <div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
+    <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">Add connector</h2>
+    <p class="text-xs text-stone-400 mb-3">Sync imports files you drop into <code class="bg-stone-100 px-1 rounded">{{ staging_root }}/&lt;name&gt;</code>, then press Sync.</p>
+    <form id="connector-form" class="flex items-center gap-3">
+      <input id="conn-name" type="text" placeholder="Connector name" class="text-sm border border-stone-200 rounded-xl px-3 py-2 flex-1">
+      <select id="conn-type" class="text-sm border border-stone-200 rounded-xl px-3 py-2">
+        {% for t in connector_types %}<option value="{{ t }}">{{ connector_labels[t] }}</option>{% endfor %}
+      </select>
+      <button class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-xl">Add</button>
+    </form>
+    <p id="conn-msg" class="text-xs text-stone-500 mt-2"></p>
+  </div>
+</div>
+
+<h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">Connected Data Sources</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+  {% for s in sources %}
+  <div class="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+    <div class="flex items-start justify-between gap-2">
+      <div>
+        <div class="font-medium text-sm">{{ s.name }}</div>
+        <div class="text-xs text-stone-500 mt-0.5">
+          {{ connector_labels.get(s.connector_type, 'Document') if s.kind == 'connector' else 'Document' }}
+          &middot; {{ chunk_counts.get(s.id, 0) }} chunks
+        </div>
+      </div>
+      <span class="text-[11px] px-2 py-0.5 rounded-full {{ 'bg-emerald-100 text-emerald-700' if s.status == 'ready' else ('bg-blue-100 text-blue-700' if s.status == 'syncing' else 'bg-red-100 text-red-700') }}">{{ s.status }}</span>
+    </div>
+    <div class="text-xs text-stone-400 mt-2">
+      {% if s.last_sync_at %}Last sync: {{ s.last_sync_at.strftime('%Y-%m-%d %H:%M') }}{% else %}Never synced{% endif %}
+    </div>
+    <div class="flex gap-2 mt-3">
+      {% if s.kind == 'connector' %}
+      <button class="sync-btn text-xs px-3 py-1.5 rounded-lg bg-stone-900 text-white hover:bg-stone-700" data-id="{{ s.id }}">Sync now</button>
+      {% endif %}
+      <button class="del-btn text-xs px-3 py-1.5 rounded-lg border border-stone-200 hover:bg-red-50 hover:text-red-700" data-id="{{ s.id }}">Remove</button>
+    </div>
+    <p class="sync-msg text-xs text-stone-500 mt-2"></p>
+  </div>
+  {% else %}
+  <p class="text-sm text-stone-500">No sources yet. Upload a document or add a connector above.</p>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('upload-form').onsubmit = async e => {
+  e.preventDefault();
+  const fi = document.getElementById('file-input');
+  const msg = document.getElementById('upload-msg');
+  if(!fi.files.length){ msg.textContent = 'Choose a file first.'; return; }
+  const fd = new FormData(); fd.append('file', fi.files[0]);
+  msg.textContent = 'Uploading and ingesting...';
+  const r = await fetch('/api/sources/upload', {method:'POST', body: fd});
+  const d = await r.json();
+  msg.textContent = r.ok ? `Ingested "${d.name}" into ${d.chunks} chunks.` : (d.detail || 'Upload failed.');
+  if(r.ok) setTimeout(() => location.reload(), 800);
+};
+document.getElementById('connector-form').onsubmit = async e => {
+  e.preventDefault();
+  const name = document.getElementById('conn-name').value.trim();
+  const type = document.getElementById('conn-type').value;
+  const msg = document.getElementById('conn-msg');
+  const r = await fetch('/api/connectors', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name, type})});
+  const d = await r.json();
+  msg.textContent = r.ok ? d.hint : (d.detail || 'Failed.');
+  if(r.ok) setTimeout(() => location.reload(), 800);
+};
+document.querySelectorAll('.sync-btn').forEach(b => b.onclick = async () => {
+  const card = b.closest('div.bg-white'), msg = card.querySelector('.sync-msg');
+  msg.textContent = 'Syncing staged files...'; b.disabled = true;
+  const r = await fetch(`/api/connectors/${b.dataset.id}/sync`, {method:'POST'});
+  const d = await r.json();
+  msg.textContent = r.ok ? d.note : (d.detail || 'Sync failed.');
+  b.disabled = false;
+  if(r.ok) setTimeout(() => location.reload(), 900);
+});
+document.querySelectorAll('.del-btn').forEach(b => b.onclick = async () => {
+  if(!confirm('Remove this source and all its chunks?')) return;
+  const r = await fetch(`/api/sources/${b.dataset.id}`, {method:'DELETE'});
+  if(r.ok) location.reload();
+});
+</script>
+{% endblock %}
