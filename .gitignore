@@ -1,0 +1,21 @@
+# Python build / cache artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage/
+htmlcov/
+
+# Virtual envs / local config
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Runtime data (keep the directory placeholders)
+data/*.db
+data/uploads/*
+!data/uploads/.gitkeep
