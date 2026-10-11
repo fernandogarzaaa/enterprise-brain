@@ -11,7 +11,7 @@ import logging
 import sys
 from contextvars import ContextVar
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, TextIO
 
 request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
 
@@ -66,9 +66,9 @@ class TextFormatter(logging.Formatter):
         return line
 
 
-def configure_logging(level: str = "INFO", fmt: str = "text") -> None:
-    """Install a single stdout handler on the root logger (idempotent)."""
-    handler = logging.StreamHandler(sys.stdout)
+def configure_logging(level: str = "INFO", fmt: str = "text", stream: TextIO | None = None) -> None:
+    """Install a single handler on the root logger (idempotent). Defaults to stdout."""
+    handler = logging.StreamHandler(stream if stream is not None else sys.stdout)
     handler.addFilter(RequestIdFilter())
     handler.setFormatter(JsonFormatter() if fmt == "json" else TextFormatter())
     root = logging.getLogger()

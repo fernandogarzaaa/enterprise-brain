@@ -291,7 +291,6 @@ def test_mock_llm_mode_end_to_end(settings_factory: SettingsFactory) -> None:
         assert "mock LLM" in page
 
 
-@respx.mock(assert_all_called=False)
 def test_openai_compatible_mode_end_to_end(settings_factory: SettingsFactory, respx_mock: respx.MockRouter) -> None:
     respx_mock.route(host="testserver").pass_through()
     route = respx_mock.post("https://api.groq.example/openai/v1/chat/completions").mock(
@@ -299,7 +298,11 @@ def test_openai_compatible_mode_end_to_end(settings_factory: SettingsFactory, re
     )
     app = create_app(
         settings_factory(
-            DEMO_DATA=True, LLM_BASE_URL="https://api.groq.example/openai/v1", LLM_API_KEY="gsk-test", LLM_MAX_RETRIES=0
+            DEMO_DATA=True,
+            LLM_PROVIDER="auto",
+            LLM_BASE_URL="https://api.groq.example/openai/v1",
+            LLM_API_KEY="gsk-test",
+            LLM_MAX_RETRIES=0,
         )
     )
     with TestClient(app) as c:
@@ -316,7 +319,6 @@ def test_openai_compatible_mode_end_to_end(settings_factory: SettingsFactory, re
         assert fallback["warnings"]
 
 
-@respx.mock(assert_all_called=False)
 def test_openai_embeddings_provider_error_is_502(settings_factory: SettingsFactory, respx_mock: respx.MockRouter) -> None:
     respx_mock.route(host="testserver").pass_through()
     respx_mock.post("http://emb.example/v1/embeddings").mock(return_value=httpx.Response(401, text="no"))

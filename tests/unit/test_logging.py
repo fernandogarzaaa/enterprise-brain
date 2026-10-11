@@ -87,3 +87,13 @@ def test_configure_logging_is_idempotent(capsys: pytest.CaptureFixture[str]) -> 
     configure_logging("WARNING", "text")
     ours = [h for h in root.handlers if getattr(h, "_enterprise_brain", False)]
     assert isinstance(ours[0].formatter, TextFormatter)
+
+
+def test_configure_logging_custom_stream() -> None:
+    import io
+
+    buf = io.StringIO()
+    configure_logging("INFO", "text", stream=buf)
+    logging.getLogger("eb.stream").info("to the buffer")
+    assert "to the buffer" in buf.getvalue()
+    configure_logging("WARNING", "text")

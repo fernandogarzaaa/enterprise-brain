@@ -28,7 +28,7 @@ def load_context(migrate: bool = True) -> AppContext:
     from enterprise_brain.main import build_context
 
     settings = load_settings()
-    configure_logging(settings.LOG_LEVEL, settings.log_format)
+    configure_logging(settings.LOG_LEVEL, settings.log_format, stream=sys.stderr)  # keep stdout for output
     if migrate:
         run_migrations(settings)
     return build_context(settings)
