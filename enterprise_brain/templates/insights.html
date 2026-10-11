@@ -1,13 +1,5 @@
 {% extends "base.html" %}
 {% block title %}Insights - {{ app_name }}{% endblock %}
-{% block nav %}
-<a href="/" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Ask</a>
-<a href="/sources" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Knowledge Sources</a>
-<a href="/insights" class="block px-3 py-2 rounded-lg bg-orange-100 text-orange-800 font-medium">Insights</a>
-<a href="/saved" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Saved Answers</a>
-<a href="/team" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Team</a>
-<a href="/settings" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Settings</a>
-{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold tracking-tight">Insights</h1>
 <p class="text-sm text-stone-500 mt-1 mb-6">How your team uses the Enterprise Brain.</p>
@@ -28,6 +20,24 @@
   <div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
     <div class="text-3xl font-bold">{{ insights.saved_answers }}</div>
     <div class="text-xs text-stone-500 mt-1">Starred answers</div>
+  </div>
+</div>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
+    <div class="text-3xl font-bold">{{ insights.unanswered_queries }}</div>
+    <div class="text-xs text-stone-500 mt-1">Unanswered questions (content gaps)</div>
+  </div>
+  <div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
+    <div class="text-3xl font-bold">{{ insights.avg_latency_ms if insights.avg_latency_ms is not none else '-' }}</div>
+    <div class="text-xs text-stone-500 mt-1">Average answer time (ms)</div>
+  </div>
+  <div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
+    <div class="text-3xl font-bold">{{ insights.total_members }}</div>
+    <div class="text-xs text-stone-500 mt-1">Team members</div>
+  </div>
+  <div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
+    <div class="text-sm font-medium">{% for m, n in insights.answer_modes.items() %}{{ m }}: {{ n }}{% if not loop.last %} &middot; {% endif %}{% else %}-{% endfor %}</div>
+    <div class="text-xs text-stone-500 mt-1">Answers by mode</div>
   </div>
 </div>
 
@@ -51,6 +61,7 @@
 </div>
 {% endblock %}
 {% block scripts %}
+<script src="/static/vendor/chart.umd.min.js"></script>
 <script>
 const labels = {{ insights.chunks_per_source | map(attribute='source') | list | tojson }};
 const counts = {{ insights.chunks_per_source | map(attribute='chunks') | list | tojson }};

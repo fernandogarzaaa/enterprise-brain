@@ -1,13 +1,5 @@
 {% extends "base.html" %}
 {% block title %}Saved Answers - {{ app_name }}{% endblock %}
-{% block nav %}
-<a href="/" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Ask</a>
-<a href="/sources" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Knowledge Sources</a>
-<a href="/insights" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Insights</a>
-<a href="/saved" class="block px-3 py-2 rounded-lg bg-orange-100 text-orange-800 font-medium">Saved Answers</a>
-<a href="/team" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Team</a>
-<a href="/settings" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Settings</a>
-{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold tracking-tight">Saved Answers</h1>
 <p class="text-sm text-stone-500 mt-1 mb-6">Star answers from Ask to pin them here.</p>
@@ -19,6 +11,7 @@
       <div class="font-medium">{{ s.question }}</div>
       <button class="unsave-btn text-xs px-3 py-1.5 rounded-full border border-stone-200 hover:bg-red-50 hover:text-red-700 shrink-0" data-id="{{ s.id }}">Unstar</button>
     </div>
+    {% if s.note %}<p class="text-xs text-orange-700 mt-1">{{ s.note }}</p>{% endif %}
     <p class="text-sm text-stone-600 mt-2 whitespace-pre-wrap">{{ s.answer }}</p>
     <div class="mt-2 space-y-1">
       {% for c in s.citations %}
@@ -37,8 +30,8 @@
 {% block scripts %}
 <script>
 document.querySelectorAll('.unsave-btn').forEach(b => b.onclick = async () => {
-  const r = await fetch(`/api/saved/${b.dataset.id}`, {method:'DELETE'});
-  if(r.ok) location.reload();
+  const r = await api(`/api/saved/${b.dataset.id}`, {method:'DELETE'});
+  if(r.ok) location.reload(); else alert(r.data.detail || 'Failed.');
 });
 </script>
 {% endblock %}

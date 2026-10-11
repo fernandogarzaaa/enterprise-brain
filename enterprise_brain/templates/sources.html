@@ -1,13 +1,5 @@
 {% extends "base.html" %}
 {% block title %}Knowledge Sources - {{ app_name }}{% endblock %}
-{% block nav %}
-<a href="/" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Ask</a>
-<a href="/sources" class="block px-3 py-2 rounded-lg bg-orange-100 text-orange-800 font-medium">Knowledge Sources</a>
-<a href="/insights" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Insights</a>
-<a href="/saved" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Saved Answers</a>
-<a href="/team" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Team</a>
-<a href="/settings" class="block px-3 py-2 rounded-lg text-stone-600 hover:bg-stone-100">Settings</a>
-{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold tracking-tight">Knowledge Sources</h1>
 <p class="text-sm text-stone-500 mt-1 mb-6">Upload documents or connect systems. Everything is chunked, embedded, and searchable.</p>
@@ -15,9 +7,9 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
   <div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
     <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">Upload document</h2>
-    <p class="text-xs text-stone-400 mb-3">PDF, TXT, Markdown, or CSV. Ingested immediately.</p>
+    <p class="text-xs text-stone-400 mb-3">PDF, Word (.docx), TXT, Markdown, CSV, HTML or JSON, up to {{ max_upload_mb }} MB. Indexed immediately.</p>
     <form id="upload-form" class="flex items-center gap-3">
-      <input id="file-input" type="file" accept=".pdf,.txt,.md,.csv" class="text-sm flex-1">
+      <input id="file-input" type="file" accept=".pdf,.docx,.txt,.md,.csv,.html,.htm,.json" class="text-sm flex-1">
       <button class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-xl">Upload</button>
     </form>
     <p id="upload-msg" class="text-xs text-stone-500 mt-2"></p>
@@ -25,11 +17,11 @@
 
   <div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
     <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">Add connector</h2>
-    <p class="text-xs text-stone-400 mb-3">Sync imports files you drop into <code class="bg-stone-100 px-1 rounded">{{ staging_root }}/&lt;name&gt;</code>, then press Sync.</p>
+    <p class="text-xs text-stone-400 mb-3">A connector indexes the exports you upload to it (or drop into its staging folder on the server). Sync is incremental: unchanged files are skipped and removed files are unindexed.</p>
     <form id="connector-form" class="flex items-center gap-3">
-      <input id="conn-name" type="text" placeholder="Connector name" class="text-sm border border-stone-200 rounded-xl px-3 py-2 flex-1">
+      <input id="conn-name" type="text" maxlength="255" placeholder="Connector name" class="text-sm border border-stone-200 rounded-xl px-3 py-2 flex-1">
       <select id="conn-type" class="text-sm border border-stone-200 rounded-xl px-3 py-2">
-        {% for t in connector_types %}<option value="{{ t }}">{{ connector_labels[t] }}</option>{% endfor %}
+        {% for t, label in connector_labels.items() %}<option value="{{ t }}">{{ label }}</option>{% endfor %}
       </select>
       <button class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-xl">Add</button>
     </form>
@@ -40,25 +32,34 @@
 <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">Connected Data Sources</h2>
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
   {% for s in sources %}
-  <div class="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+  <div class="source-card bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
     <div class="flex items-start justify-between gap-2">
-      <div>
-        <div class="font-medium text-sm">{{ s.name }}</div>
+      <div class="min-w-0">
+        <div class="font-medium text-sm truncate">{{ s.name }}</div>
         <div class="text-xs text-stone-500 mt-0.5">
-          {{ connector_labels.get(s.connector_type, 'Document') if s.kind == 'connector' else 'Document' }}
-          &middot; {{ chunk_counts.get(s.id, 0) }} chunks
+          {{ connector_labels.get(s.connector_type, 'Connector') if s.kind == 'connector' else 'Document' }}
+          &middot; {{ s.documents|length }} file(s) &middot; {{ chunk_counts.get(s.id, 0) }} chunks
         </div>
       </div>
       <span class="text-[11px] px-2 py-0.5 rounded-full {{ 'bg-emerald-100 text-emerald-700' if s.status == 'ready' else ('bg-blue-100 text-blue-700' if s.status == 'syncing' else 'bg-red-100 text-red-700') }}">{{ s.status }}</span>
     </div>
     <div class="text-xs text-stone-400 mt-2">
-      {% if s.last_sync_at %}Last sync: {{ s.last_sync_at.strftime('%Y-%m-%d %H:%M') }}{% else %}Never synced{% endif %}
+      {% if s.last_sync_at %}Last sync: {{ s.last_sync_at.strftime('%Y-%m-%d %H:%M') }} UTC{% else %}Never synced{% endif %}
     </div>
-    <div class="flex gap-2 mt-3">
+    {% if s.error %}<div class="text-xs text-red-600 mt-1 break-words">{{ s.error }}</div>{% endif %}
+    {% if s.kind == 'connector' %}
+    <div class="text-[11px] text-stone-400 mt-1 break-all">Staging: <code>{{ staging_dirs[s.id] }}</code></div>
+    {% endif %}
+    <div class="flex flex-wrap gap-2 mt-3">
       {% if s.kind == 'connector' %}
+      <label class="text-xs px-3 py-1.5 rounded-lg border border-stone-200 hover:bg-stone-100 cursor-pointer">Add file
+        <input type="file" class="stage-input hidden" data-id="{{ s.id }}" accept=".pdf,.docx,.txt,.md,.csv,.html,.htm,.json">
+      </label>
       <button class="sync-btn text-xs px-3 py-1.5 rounded-lg bg-stone-900 text-white hover:bg-stone-700" data-id="{{ s.id }}">Sync now</button>
       {% endif %}
+      {% if user.is_admin or s.created_by_id in (none, user.id) %}
       <button class="del-btn text-xs px-3 py-1.5 rounded-lg border border-stone-200 hover:bg-red-50 hover:text-red-700" data-id="{{ s.id }}">Remove</button>
+      {% endif %}
     </div>
     <p class="sync-msg text-xs text-stone-500 mt-2"></p>
   </div>
@@ -75,10 +76,9 @@ document.getElementById('upload-form').onsubmit = async e => {
   const msg = document.getElementById('upload-msg');
   if(!fi.files.length){ msg.textContent = 'Choose a file first.'; return; }
   const fd = new FormData(); fd.append('file', fi.files[0]);
-  msg.textContent = 'Uploading and ingesting...';
-  const r = await fetch('/api/sources/upload', {method:'POST', body: fd});
-  const d = await r.json();
-  msg.textContent = r.ok ? `Ingested "${d.name}" into ${d.chunks} chunks.` : (d.detail || 'Upload failed.');
+  msg.textContent = 'Uploading and indexing...';
+  const r = await api('/api/sources/upload', {method:'POST', body: fd});
+  msg.textContent = r.ok ? `Indexed "${r.data.name}" into ${r.data.chunks} chunks.` : (r.data.detail || 'Upload failed.');
   if(r.ok) setTimeout(() => location.reload(), 800);
 };
 document.getElementById('connector-form').onsubmit = async e => {
@@ -86,25 +86,30 @@ document.getElementById('connector-form').onsubmit = async e => {
   const name = document.getElementById('conn-name').value.trim();
   const type = document.getElementById('conn-type').value;
   const msg = document.getElementById('conn-msg');
-  const r = await fetch('/api/connectors', {method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({name, type})});
-  const d = await r.json();
-  msg.textContent = r.ok ? d.hint : (d.detail || 'Failed.');
-  if(r.ok) setTimeout(() => location.reload(), 800);
+  const r = await api('/api/connectors', jsonBody({name, type}));
+  msg.textContent = r.ok ? r.data.hint : (r.data.detail || 'Failed.');
+  if(r.ok) setTimeout(() => location.reload(), 1200);
 };
+document.querySelectorAll('.stage-input').forEach(inp => inp.onchange = async () => {
+  const msg = inp.closest('.source-card').querySelector('.sync-msg');
+  if(!inp.files.length) return;
+  const fd = new FormData(); fd.append('file', inp.files[0]);
+  msg.textContent = 'Uploading to connector...';
+  const r = await api(`/api/connectors/${inp.dataset.id}/files`, {method:'POST', body: fd});
+  msg.textContent = r.ok ? `Staged ${r.data.staged}. Press Sync now to index it.` : (r.data.detail || 'Upload failed.');
+});
 document.querySelectorAll('.sync-btn').forEach(b => b.onclick = async () => {
-  const card = b.closest('div.bg-white'), msg = card.querySelector('.sync-msg');
+  const msg = b.closest('.source-card').querySelector('.sync-msg');
   msg.textContent = 'Syncing staged files...'; b.disabled = true;
-  const r = await fetch(`/api/connectors/${b.dataset.id}/sync`, {method:'POST'});
-  const d = await r.json();
-  msg.textContent = r.ok ? d.note : (d.detail || 'Sync failed.');
+  const r = await api(`/api/connectors/${b.dataset.id}/sync`, {method:'POST'});
+  msg.textContent = r.ok ? r.data.note : (r.data.detail || 'Sync failed.');
   b.disabled = false;
-  if(r.ok) setTimeout(() => location.reload(), 900);
+  if(r.ok) setTimeout(() => location.reload(), 1500);
 });
 document.querySelectorAll('.del-btn').forEach(b => b.onclick = async () => {
-  if(!confirm('Remove this source and all its chunks?')) return;
-  const r = await fetch(`/api/sources/${b.dataset.id}`, {method:'DELETE'});
-  if(r.ok) location.reload();
+  if(!confirm('Remove this source, its files and all its chunks?')) return;
+  const r = await api(`/api/sources/${b.dataset.id}`, {method:'DELETE'});
+  if(r.ok) location.reload(); else alert(r.data.detail || 'Delete failed.');
 });
 </script>
 {% endblock %}
