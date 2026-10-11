@@ -143,6 +143,9 @@ def test_upgrade_from_beta_database(settings_factory: SettingsFactory) -> None:
     with engine.begin() as conn:
         for table, values in rows.items():
             conn.execute(md.tables[table].insert(), values)
+        if engine.dialect.name == "postgresql":  # a real beta advanced its sequences
+            for table in rows:
+                conn.execute(text(f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), 1)"))
     engine.dispose()
 
     app = create_app(s)  # AUTO_MIGRATE upgrades the beta schema in place

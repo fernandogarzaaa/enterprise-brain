@@ -195,6 +195,23 @@ def cmd_check_config(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_healthcheck(args: argparse.Namespace) -> int:
+    """Exit 0 when the local server's readiness endpoint answers (used by Docker)."""
+    import httpx
+
+    port = args.port or load_settings().PORT
+    try:
+        resp = httpx.get(f"http://127.0.0.1:{port}/api/health/ready", timeout=args.timeout)
+    except httpx.HTTPError as exc:
+        print(f"unhealthy: {exc}", file=sys.stderr)
+        return 1
+    if resp.status_code != 200:
+        print(f"unhealthy: HTTP {resp.status_code}", file=sys.stderr)
+        return 1
+    print("ok")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="enterprise-brain", description="Enterprise Brain server and admin tools.")
     p.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -239,6 +256,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("reindex", help="re-embed all chunks after changing EMBEDDINGS")
     s.set_defaults(func=cmd_reindex)
+
+    s = sub.add_parser("healthcheck", help="probe the local server's readiness endpoint")
+    s.add_argument("--port", type=int)
+    s.add_argument("--timeout", type=float, default=4.0)
+    s.set_defaults(func=cmd_healthcheck)
 
     s = sub.add_parser("check-config", help="validate configuration and print a summary")
     s.set_defaults(func=cmd_check_config)

@@ -175,3 +175,23 @@ def test_lifespan_starts_scheduler(settings_factory: SettingsFactory) -> None:
     app = create_app(settings_factory(SYNC_INTERVAL_MINUTES=60))
     with TestClient(app) as c:
         assert c.get("/api/health").status_code == 200
+
+
+def test_healthcheck(env: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch) -> None:
+    import httpx
+
+    calls: list[str] = []
+
+    def fake_get(url: str, timeout: float) -> httpx.Response:
+        calls.append(url)
+        if "9" in url.split(":")[-1].split("/")[0]:
+            raise httpx.ConnectError("refused")
+        return httpx.Response(200 if url.startswith("http://127.0.0.1:8002") else 503)
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+    assert run(capsys, "healthcheck") == (0, "ok\n", "")
+    assert calls[-1] == "http://127.0.0.1:8002/api/health/ready"
+    code, _, err = run(capsys, "healthcheck", "--port", "8003")
+    assert code == 1 and "HTTP 503" in err
+    code, _, err = run(capsys, "healthcheck", "--port", "9999")
+    assert code == 1 and "refused" in err

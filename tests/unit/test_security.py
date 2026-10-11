@@ -20,7 +20,7 @@ from enterprise_brain.security import (
     verify_password,
 )
 
-SECRET = "s" * 40
+SECRET = "s" * 64
 
 
 def test_hash_and_verify() -> None:

@@ -2,20 +2,22 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
+build/
+dist/
 .pytest_cache/
 .ruff_cache/
+.mypy_cache/
 .coverage
-coverage/
+coverage.xml
 htmlcov/
+mutants/
 
-# Virtual envs / local config
+# Virtual envs / local config (never commit secrets)
 .venv/
 venv/
 .env
 .env.*
 !.env.example
 
-# Runtime data (keep the directory placeholders)
-data/*.db
-data/uploads/*
-!data/uploads/.gitkeep
+# Runtime data
+data/
