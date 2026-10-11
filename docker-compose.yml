@@ -1,33 +1,40 @@
+# Production-style stack: Enterprise Brain + PostgreSQL with pgvector.
+#   cp .env.example .env   # set SECRET_KEY, ADMIN_EMAIL, ADMIN_PASSWORD, POSTGRES_PASSWORD (and an LLM if wanted)
+#   docker compose up -d --build
 services:
   db:
     image: pgvector/pgvector:0.8.0-pg16
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: clusterx
-      POSTGRES_PASSWORD: clusterx
-      POSTGRES_DB: clusterx
+      POSTGRES_USER: ${POSTGRES_USER:-eb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eb-local-only}
+      POSTGRES_DB: ${POSTGRES_DB:-enterprise_brain}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U clusterx"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-eb} -d ${POSTGRES_DB:-enterprise_brain}"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
 
-  api:
+  app:
     build: .
-    ports:
-      - "${PORT:-8002}:${PORT:-8002}"
+    image: enterprise-brain:1.0.0
+    restart: unless-stopped
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql+psycopg2://clusterx:clusterx@db:5432/clusterx
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-eb}:${POSTGRES_PASSWORD:-eb-local-only}@db:5432/${POSTGRES_DB:-enterprise_brain}
+      DATA_DIR: /data
       PORT: ${PORT:-8002}
-      SEED_ON_STARTUP: "1"
+    ports:
+      - "${PORT:-8002}:${PORT:-8002}"
     volumes:
-      - ./data:/srv/app/data
+      - appdata:/data
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   pgdata:
+  appdata:

@@ -1,0 +1,49 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and attach artifacts for (e.g. v1.0.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt && pip install --no-deps -e .
+      - run: pytest -q
+      - name: check the tag matches the package version
+        run: |
+          VERSION=$(python -c 'import enterprise_brain; print(enterprise_brain.__version__)')
+          test "v${VERSION}" = "${TAG}" || { echo "tag ${TAG} != version ${VERSION}"; exit 1; }
+      - run: pip install build twine && python -m build && twine check dist/*
+      - name: create the GitHub release (or update an existing one) with the wheel and sdist
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            NOTES=$(python - <<'PY'
+          import os, re
+          tag = os.environ["TAG"].lstrip("v")
+          text = open("CHANGELOG.md", encoding="utf-8").read()
+          m = re.search(rf"^## \[{re.escape(tag)}\].*?$(.*?)(?=^## \[|\Z)", text, re.S | re.M)
+          print(m.group(1).strip() if m else f"Release {tag}")
+          PY
+          )
+            gh release create "$TAG" dist/* --title "Enterprise Brain $TAG" --notes "$NOTES"
+          fi

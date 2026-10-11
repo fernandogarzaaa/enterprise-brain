@@ -1,18 +1,10 @@
 {
   "name": "enterprise-brain",
-  "dockerComposeFile": [
-    "../docker-compose.yml"
-  ],
-  "service": "api",
-  "workspaceFolder": "/srv/app",
-  "forwardPorts": [
-    "8002"
-  ],
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "postCreateCommand": "pip install -e '.[dev]' && (test -f .env || cp .env.example .env)",
+  "postStartCommand": "DEMO_DATA=true nohup enterprise-brain serve > /tmp/enterprise-brain.log 2>&1 &",
+  "forwardPorts": [8002],
   "portsAttributes": {
-    "8002": {
-      "label": "enterprise-brain",
-      "onAutoForward": "openPreview"
-    }
-  },
-  "postCreateCommand": "echo 'Codespace ready: the app auto-seeds on first boot.'"
+    "8002": { "label": "Enterprise Brain", "onAutoForward": "openPreview" }
+  }
 }

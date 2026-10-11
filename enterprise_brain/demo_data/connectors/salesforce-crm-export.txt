@@ -1,0 +1,7 @@
+CRM EXPORT - key accounts (synced September 26, 2026).
+
+Acme Corp: status Customer, ARR $240,000, health score 92, last contact Sep 20.
+Globex Inc: status Customer, ARR $170,000, health score 81, last contact Sep 24.
+Initech: status Customer, ARR $124,800, health score 77, last contact Sep 18.
+Cyberdyne Systems: status Prospect, pipeline $150,000, stage Negotiation.
+Tyrell Corp: status Prospect, pipeline $120,000, stage Evaluation.

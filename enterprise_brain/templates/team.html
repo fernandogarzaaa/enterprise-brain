@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Team - {{ app_name }}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold tracking-tight">Team</h1>
+<p class="text-sm text-stone-500 mt-1 mb-6">Everyone with access to this {{ app_name }}.</p>
+
+{% if is_admin %}
+<div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm mb-6">
+  <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">Invite a member</h2>
+  <form id="invite-form" class="flex flex-wrap items-center gap-3">
+    <input id="inv-name" type="text" maxlength="255" placeholder="Name" class="text-sm border border-stone-200 rounded-xl px-3 py-2">
+    <input id="inv-email" type="email" placeholder="work email" required class="text-sm border border-stone-200 rounded-xl px-3 py-2 flex-1 min-w-52">
+    <select id="inv-role" class="text-sm border border-stone-200 rounded-xl px-3 py-2"><option value="member">Member</option><option value="admin">Admin</option></select>
+    <button class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-xl">Create account</button>
+  </form>
+  <p id="inv-msg" class="text-xs text-stone-500 mt-2">The account is created immediately; its temporary password is shown once here for you to share privately.</p>
+</div>
+{% endif %}
+
+<div class="bg-white border border-stone-200 rounded-2xl shadow-sm overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-stone-50 text-xs uppercase text-stone-500">
+      <tr><th class="text-left px-5 py-3 font-medium">Name</th><th class="text-left px-5 py-3 font-medium">Email</th><th class="text-left px-5 py-3 font-medium">Role</th><th class="text-left px-5 py-3 font-medium">Status</th><th class="text-left px-5 py-3 font-medium">Joined</th>{% if is_admin %}<th class="px-5 py-3"></th>{% endif %}</tr>
+    </thead>
+    <tbody class="divide-y divide-stone-100">
+      {% for m in members %}
+      <tr>
+        <td class="px-5 py-3">{{ m.name }}</td>
+        <td class="px-5 py-3 text-stone-600">{{ m.email }}</td>
+        <td class="px-5 py-3"><span class="text-[11px] px-2 py-0.5 rounded-full {{ 'bg-orange-100 text-orange-800' if m.role == 'admin' else 'bg-stone-100 text-stone-600' }}">{{ m.role }}</span></td>
+        <td class="px-5 py-3 text-xs {{ 'text-emerald-700' if m.is_active else 'text-stone-400' }}">{{ 'active' if m.is_active else 'deactivated' }}</td>
+        <td class="px-5 py-3 text-stone-500">{{ m.created_at.strftime('%Y-%m-%d') if m.created_at }}</td>
+        {% if is_admin %}
+        <td class="px-5 py-3 text-right whitespace-nowrap">
+          {% if m.id != user.id %}
+          <button class="act text-xs text-stone-600 hover:underline" data-id="{{ m.id }}" data-act="role" data-role="{{ 'member' if m.role == 'admin' else 'admin' }}">{{ 'Make member' if m.role == 'admin' else 'Make admin' }}</button>
+          <button class="act text-xs text-stone-600 hover:underline ml-2" data-id="{{ m.id }}" data-act="active" data-active="{{ 'false' if m.is_active else 'true' }}">{{ 'Deactivate' if m.is_active else 'Reactivate' }}</button>
+          <button class="act text-xs text-stone-600 hover:underline ml-2" data-id="{{ m.id }}" data-act="reset">Reset password</button>
+          <button class="act text-xs text-red-600 hover:underline ml-2" data-id="{{ m.id }}" data-act="delete">Delete</button>
+          {% else %}<span class="text-xs text-stone-400">you</span>{% endif %}
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p id="team-msg" class="text-xs text-stone-500 mt-3"></p>
+{% endblock %}
+{% block scripts %}
+{% if is_admin %}
+<script>
+const teamMsg = document.getElementById('team-msg');
+document.getElementById('invite-form').onsubmit = async e => {
+  e.preventDefault();
+  const msg = document.getElementById('inv-msg');
+  const r = await api('/api/team/invite', jsonBody({name: document.getElementById('inv-name').value, email: document.getElementById('inv-email').value, role: document.getElementById('inv-role').value}));
+  if(r.ok){
+    msg.innerHTML = `Created <b>${esc(r.data.email)}</b>. Temporary password (shown once): <code class="bg-stone-100 px-2 py-0.5 rounded font-mono">${esc(r.data.temporary_password)}</code>`;
+  } else msg.textContent = r.data.detail || 'Invite failed.';
+};
+document.querySelectorAll('.act').forEach(b => b.onclick = async () => {
+  const id = b.dataset.id, act = b.dataset.act;
+  let r;
+  if(act === 'role') r = await api(`/api/team/${id}`, jsonBody({role: b.dataset.role}, 'PATCH'));
+  else if(act === 'active') r = await api(`/api/team/${id}`, jsonBody({is_active: b.dataset.active === 'true'}, 'PATCH'));
+  else if(act === 'reset'){
+    if(!confirm('Reset this member\'s password? They will be signed out.')) return;
+    r = await api(`/api/team/${id}/reset-password`, {method:'POST'});
+    if(r.ok){ teamMsg.innerHTML = `New temporary password for <b>${esc(r.data.email)}</b>: <code class="bg-stone-100 px-2 py-0.5 rounded font-mono">${esc(r.data.temporary_password)}</code>`; return; }
+  } else if(act === 'delete'){
+    if(!confirm('Delete this member permanently?')) return;
+    r = await api(`/api/team/${id}`, {method:'DELETE'});
+  }
+  if(r.ok) location.reload(); else teamMsg.textContent = r.data.detail || 'Action failed.';
+});
+</script>
+{% endif %}
+{% endblock %}
