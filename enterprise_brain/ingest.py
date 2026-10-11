@@ -72,18 +72,19 @@ class _HTMLText(HTMLParser):
             self.parts.append(data)
 
 
-def _json_lines(value: object, prefix: str = "") -> list[str]:
+def _json_lines(value: object, path: str = "") -> list[str]:
+    """Flatten JSON into ``dotted.path: value`` lines."""
     if isinstance(value, dict):
         out: list[str] = []
         for k, v in value.items():
-            out.extend(_json_lines(v, f"{prefix}{k}." if prefix else f"{k}: "))
+            out.extend(_json_lines(v, f"{path}.{k}" if path else str(k)))
         return out
     if isinstance(value, list):
         out = []
         for item in value:
-            out.extend(_json_lines(item, prefix))
+            out.extend(_json_lines(item, path))
         return out
-    return [f"{prefix}{value}".strip()]
+    return [f"{path}: {value}" if path else str(value)]
 
 
 def extract_text(data: bytes, suffix: str) -> str:
