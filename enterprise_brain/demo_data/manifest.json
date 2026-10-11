@@ -1,0 +1,61 @@
+{
+  "documents": [
+    {
+      "name": "Acme Corp - Master Services Agreement",
+      "file": "acme-corp-master-services-agreement.md"
+    },
+    {
+      "name": "Q3 2026 Revenue by Client",
+      "file": "q3-2026-revenue-by-client.md"
+    },
+    {
+      "name": "Approved Vendor List 2026",
+      "file": "approved-vendor-list-2026.md"
+    },
+    {
+      "name": "Invoice and Expense Policy",
+      "file": "invoice-and-expense-policy.md"
+    },
+    {
+      "name": "Data Retention Policy",
+      "file": "data-retention-policy.md"
+    },
+    {
+      "name": "Globex Inc - Statement of Work",
+      "file": "globex-inc-statement-of-work.md"
+    },
+    {
+      "name": "Remote Work Security Policy",
+      "file": "remote-work-security-policy.md"
+    },
+    {
+      "name": "CloudServe Hosting - Vendor Contract",
+      "file": "cloudserve-hosting-vendor-contract.md"
+    },
+    {
+      "name": "Employee Leave Policy",
+      "file": "employee-leave-policy.md"
+    },
+    {
+      "name": "Q3 2026 Sales Pipeline Summary",
+      "file": "q3-2026-sales-pipeline-summary.md"
+    }
+  ],
+  "connectors": [
+    {
+      "name": "Salesforce CRM",
+      "type": "crm",
+      "file": "salesforce-crm-export.txt"
+    },
+    {
+      "name": "NetSuite ERP",
+      "type": "erp",
+      "file": "netsuite-erp-export.txt"
+    },
+    {
+      "name": "Google Drive",
+      "type": "gdrive",
+      "file": "google-drive-export.txt"
+    }
+  ]
+}

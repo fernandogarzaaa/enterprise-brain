@@ -1,0 +1,6 @@
+ERP EXPORT - open invoices (synced September 26, 2026).
+
+INV-2026-0912 Acme Corp $60,000 due Oct 15, 2026 - SENT.
+INV-2026-0918 Globex Inc $35,000 due Oct 30, 2026 - SENT (milestone 2).
+INV-2026-0921 Initech $31,200 due Oct 12, 2026 - OVERDUE by 15 days, follow up.
+Total accounts receivable: $126,200. Overdue: $31,200 (Initech).
