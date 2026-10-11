@@ -10,18 +10,18 @@ from __future__ import annotations
 import os
 from collections.abc import Callable, Iterator
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session
 
 from enterprise_brain.config import Settings
-from enterprise_brain.deps import AppContext
-from enterprise_brain.main import create_app
-from enterprise_brain.vectorstore import reset_pgvector_cache
+
+if TYPE_CHECKING:  # heavy imports stay lazy so pure unit tests start fast (mutation testing)
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from sqlalchemy.orm import Session
+
+    from enterprise_brain.deps import AppContext
 
 ADMIN_EMAIL = "admin@example.com"
 ADMIN_PASSWORD = "Adm1n-Passw0rd!"
@@ -32,6 +32,10 @@ SettingsFactory = Callable[..., Settings]
 
 
 def reset_postgres(url: str) -> None:
+    from sqlalchemy import create_engine, text
+
+    from enterprise_brain.vectorstore import reset_pgvector_cache
+
     engine = create_engine(url)
     with engine.begin() as conn:
         conn.execute(text("DROP SCHEMA IF EXISTS public CASCADE"))
@@ -79,6 +83,8 @@ def settings(settings_factory: SettingsFactory) -> Settings:
 
 @pytest.fixture
 def app(settings: Settings) -> FastAPI:
+    from enterprise_brain.main import create_app
+
     return create_app(settings)
 
 
@@ -99,6 +105,8 @@ def db(ctx: AppContext) -> Iterator[Session]:
 
 @pytest.fixture
 def client(app: FastAPI) -> Iterator[TestClient]:
+    from fastapi.testclient import TestClient
+
     with TestClient(app) as c:
         yield c
 
@@ -126,11 +134,15 @@ def member(client: TestClient, admin_headers: dict[str, str]) -> dict[str, Any]:
 
 @pytest.fixture
 def demo_app(settings_factory: SettingsFactory) -> FastAPI:
+    from enterprise_brain.main import create_app
+
     return create_app(settings_factory(DEMO_DATA=True))
 
 
 @pytest.fixture
 def demo_client(demo_app: FastAPI) -> Iterator[TestClient]:
+    from fastapi.testclient import TestClient
+
     with TestClient(demo_app) as c:
         yield c
 
