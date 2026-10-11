@@ -16,9 +16,11 @@ from typing import Any, TextIO
 request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
 
 # Attributes every LogRecord has; anything else was passed via ``extra=`` and is emitted.
-_RESERVED = frozenset(
-    vars(logging.LogRecord("x", logging.INFO, "x", 0, "x", None, None)).keys()
-) | {"message", "asctime", "request_id"}
+_RESERVED = frozenset(vars(logging.LogRecord("x", logging.INFO, "x", 0, "x", None, None)).keys()) | {
+    "message",
+    "asctime",
+    "request_id",
+}
 
 TEXT_FORMAT = "%(asctime)s %(levelname)-7s [%(request_id)s] %(name)s: %(message)s"
 

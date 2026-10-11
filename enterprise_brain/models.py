@@ -67,9 +67,7 @@ class Source(Base):
     connector_type: Mapped[str | None] = mapped_column(String(64), nullable=True)
     status: Mapped[str] = mapped_column(String(32), default="ready")  # ready | syncing | error
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_by_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
-    )
+    created_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     last_sync_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
@@ -130,9 +128,7 @@ class Query(Base):
     __tablename__ = "queries"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
-    )
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     question: Mapped[str] = mapped_column(Text)
     answer: Mapped[str] = mapped_column(Text, default="")
     citations_json: Mapped[str] = mapped_column(Text, default="[]")
@@ -148,8 +144,6 @@ class SavedAnswer(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     query_id: Mapped[int] = mapped_column(ForeignKey("queries.id", ondelete="CASCADE"), unique=True)
-    user_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
-    )
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     note: Mapped[str] = mapped_column(String(500), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

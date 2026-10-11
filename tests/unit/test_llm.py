@@ -61,7 +61,7 @@ def test_hashed_embedder_counts_repeats() -> None:
 def test_hashed_embedder_matches_beta_vectors() -> None:
     # the 0.x beta bucketed tokens with md5 into 256 dims; 1.0 must match exactly
     (v,) = HashedEmbedder(256).embed(["Invoice"])
-    idx = int(hashlib.md5(b"invoice").hexdigest(), 16) % 256
+    idx = int(hashlib.md5(b"invoice", usedforsecurity=False).hexdigest(), 16) % 256
     assert v[idx] == 1.0
 
 

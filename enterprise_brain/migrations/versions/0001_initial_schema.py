@@ -97,9 +97,7 @@ def _create_fresh() -> None:
         "chunks",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("source_id", sa.Integer(), sa.ForeignKey("sources.id", ondelete="CASCADE"), nullable=False),
-        sa.Column(
-            "document_id", sa.Integer(), sa.ForeignKey("documents.id", ondelete="CASCADE"), nullable=True
-        ),
+        sa.Column("document_id", sa.Integer(), sa.ForeignKey("documents.id", ondelete="CASCADE"), nullable=True),
         sa.Column("position", sa.Integer(), nullable=False),
         sa.Column("text", sa.Text(), nullable=False),
         sa.Column("embedding_json", sa.Text(), nullable=False),
@@ -170,9 +168,7 @@ def _upgrade_legacy() -> None:
     with op.batch_alter_table("sources") as b:
         b.add_column(sa.Column("error", sa.Text(), nullable=True))
         b.add_column(sa.Column("created_by_id", sa.Integer(), nullable=True))
-        b.create_foreign_key(
-            "fk_sources_created_by_id_users", "users", ["created_by_id"], ["id"], ondelete="SET NULL"
-        )
+        b.create_foreign_key("fk_sources_created_by_id_users", "users", ["created_by_id"], ["id"], ondelete="SET NULL")
     with op.batch_alter_table("queries") as b:
         b.add_column(sa.Column("user_id", sa.Integer(), nullable=True))
         b.add_column(sa.Column("mode", sa.String(32), nullable=False, server_default="extractive"))

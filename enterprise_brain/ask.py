@@ -27,12 +27,12 @@ from enterprise_brain.vectorstore import Hit, get_store
 
 log = logging.getLogger(__name__)
 
-STOPWORDS = frozenset(
-    "the a an and or of to in on for with is are was were be been by as at from "
-    "that this it its into what who whom which when where why how do does did can could "
-    "should would will there their them they our your you we i he she him her his hers "
-    "ours yours me my us any all about tell show give list".split()
-)
+_STOPWORD_TEXT = """
+the a an and or of to in on for with is are was were be been by as at from that this it its into
+what who whom which when where why how do does did can could should would will there their them
+they our your you we i he she him her his hers ours yours me my us any all about tell show give list
+"""
+STOPWORDS = frozenset(_STOPWORD_TEXT.split())
 
 NO_HITS_ANSWER = (
     "I couldn't find anything in the knowledge base that answers that question. "

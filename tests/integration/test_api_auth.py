@@ -168,7 +168,10 @@ def test_api_keys_endpoints(client: TestClient, admin_headers: dict[str, str]) -
     assert client.get("/api/auth/me", headers={"X-API-Key": key}).json()["email"] == ADMIN_EMAIL
     assert client.get("/api/auth/me", headers={"Authorization": f"Bearer {key}"}).status_code == 200
     # API keys are not cookies: no CSRF check
-    assert client.post("/api/ask", headers={"X-API-Key": key, "Origin": "https://x"}, json={"question": "q"}).status_code == 200
+    assert (
+        client.post("/api/ask", headers={"X-API-Key": key, "Origin": "https://x"}, json={"question": "q"}).status_code
+        == 200
+    )
     assert client.get("/api/auth/me", headers={"X-API-Key": key + "x"}).status_code == 401
     assert client.delete(f"/api/auth/api-keys/{data['id']}", headers=admin_headers).json() == {"revoked": data["id"]}
     assert client.get("/api/auth/me", headers={"X-API-Key": key}).status_code == 401
@@ -199,9 +202,7 @@ def test_cors(settings_factory: SettingsFactory) -> None:
             headers={"Origin": "https://portal.example.com", "Access-Control-Request-Method": "POST"},
         )
         assert r.headers["access-control-allow-origin"] == "https://portal.example.com"
-        r2 = c.options(
-            "/api/ask", headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "POST"}
-        )
+        r2 = c.options("/api/ask", headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "POST"})
         assert "access-control-allow-origin" not in r2.headers
 
 
@@ -218,7 +219,9 @@ def test_unhandled_error_returns_500_json(client: TestClient, admin_headers: dic
     assert r.json()["request_id"] == r.headers["x-request-id"]
 
 
-def test_deactivated_user_token_rejected(client: TestClient, admin_headers: dict[str, str], member: dict[str, Any]) -> None:
+def test_deactivated_user_token_rejected(
+    client: TestClient, admin_headers: dict[str, str], member: dict[str, Any]
+) -> None:
     assert client.get("/api/auth/me", headers=member["headers"]).status_code == 200
     client.patch(f"/api/team/{member['id']}", headers=admin_headers, json={"is_active": False})
     assert client.get("/api/auth/me", headers=member["headers"]).status_code == 401

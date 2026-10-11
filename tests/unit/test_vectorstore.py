@@ -42,7 +42,9 @@ def test_vector_literal() -> None:
 
 
 def _add(db: Session, sid: int, text: str, vec: list[float], model: str = "m") -> models.Chunk:
-    c = models.Chunk(source_id=sid, text=text, embedding_json=json.dumps(vec), embedding_model=model, embedding_dim=len(vec))
+    c = models.Chunk(
+        source_id=sid, text=text, embedding_json=json.dumps(vec), embedding_model=model, embedding_dim=len(vec)
+    )
     db.add(c)
     db.flush()
     return c

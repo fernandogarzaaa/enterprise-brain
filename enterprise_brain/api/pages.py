@@ -35,9 +35,7 @@ NAV = [
 ]
 
 
-def render(
-    ctx: AppContext, request: Request, template: str, user: models.User, active: str, **extra: Any
-) -> Response:
+def render(ctx: AppContext, request: Request, template: str, user: models.User, active: str, **extra: Any) -> Response:
     data = {
         "app_name": ctx.settings.APP_NAME,
         "version": __version__,
@@ -75,11 +73,7 @@ def ask_page(
         return login_redirect()
     sources = db.query(models.Source).order_by(models.Source.name).all()
     recent = (
-        db.query(models.Query)
-        .filter(models.Query.user_id == user.id)
-        .order_by(models.Query.id.desc())
-        .limit(10)
-        .all()
+        db.query(models.Query).filter(models.Query.user_id == user.id).order_by(models.Query.id.desc()).limit(10).all()
     )
     return render(
         ctx,

@@ -232,13 +232,7 @@ def reindex_all(db: Session, settings: Settings, embedder: Embedder, batch: int 
     total = 0
     last_id = 0
     while True:
-        rows = (
-            db.query(models.Chunk)
-            .filter(models.Chunk.id > last_id)
-            .order_by(models.Chunk.id)
-            .limit(batch)
-            .all()
-        )
+        rows = db.query(models.Chunk).filter(models.Chunk.id > last_id).order_by(models.Chunk.id).limit(batch).all()
         if not rows:
             break
         vectors = embedder.embed([c.text for c in rows])

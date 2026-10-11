@@ -23,13 +23,17 @@ def test_demo_data_seeded_and_answers_cite(demo_client: TestClient, demo_headers
     assert len(sources) == 13
     assert sum(1 for s in sources if s["kind"] == "connector") == 3
     assert all(s["chunks"] > 0 for s in sources)
-    r = demo_client.post("/api/ask", headers=demo_headers, json={"question": "What is the status of the Acme Corp contract?"})
+    r = demo_client.post(
+        "/api/ask", headers=demo_headers, json={"question": "What is the status of the Acme Corp contract?"}
+    )
     assert r.status_code == 200
     data = r.json()
     assert data["mode"] == "extractive"
     assert "[1]" in data["answer"] and "Acme" in data["answer"]
     assert "Acme" in data["citations"][0]["source_name"]
-    overdue = demo_client.post("/api/ask", headers=demo_headers, json={"question": "Which invoices are overdue?"}).json()
+    overdue = demo_client.post(
+        "/api/ask", headers=demo_headers, json={"question": "Which invoices are overdue?"}
+    ).json()
     assert "OVERDUE" in overdue["answer"] or "overdue" in overdue["answer"].lower()
 
 
@@ -73,8 +77,12 @@ def test_queries_are_private_per_user(
 
 
 def test_save_and_unsave(client: TestClient, admin_headers: dict[str, str], member: dict[str, Any]) -> None:
-    client.post("/api/sources/upload", headers=admin_headers, files={"file": ("p.txt", io.BytesIO(POLICY), "text/plain")})
-    qid = client.post("/api/ask", headers=admin_headers, json={"question": "What is the remote work stipend?"}).json()["query_id"]
+    client.post(
+        "/api/sources/upload", headers=admin_headers, files={"file": ("p.txt", io.BytesIO(POLICY), "text/plain")}
+    )
+    qid = client.post("/api/ask", headers=admin_headers, json={"question": "What is the remote work stipend?"}).json()[
+        "query_id"
+    ]
     r = client.post(f"/api/queries/{qid}/save", headers=admin_headers)
     assert r.status_code == 200
     saved_id = r.json()["saved_id"]
@@ -119,12 +127,16 @@ def test_upload_rejections(settings_factory: SettingsFactory) -> None:
         empty = c.post("/api/sources/upload", headers=h, files={"file": ("e.txt", io.BytesIO(b""), "text/plain")})
         assert empty.status_code == 400
         big = c.post(
-            "/api/sources/upload", headers=h, files={"file": ("b.txt", io.BytesIO(b"a" * (1024 * 1024 + 5)), "text/plain")}
+            "/api/sources/upload",
+            headers=h,
+            files={"file": ("b.txt", io.BytesIO(b"a" * (1024 * 1024 + 5)), "text/plain")},
         )
         assert big.status_code == 400 and "1 MB" in big.json()["detail"]
         blank = c.post("/api/sources/upload", headers=h, files={"file": ("w.txt", io.BytesIO(b"   "), "text/plain")})
         assert blank.status_code == 422 and "no extractable text" in blank.json()["detail"]
-        corrupt = c.post("/api/sources/upload", headers=h, files={"file": ("c.pdf", io.BytesIO(b"%PDF-x"), "application/pdf")})
+        corrupt = c.post(
+            "/api/sources/upload", headers=h, files={"file": ("c.pdf", io.BytesIO(b"%PDF-x"), "application/pdf")}
+        )
         assert corrupt.status_code == 422
         assert c.get("/api/sources", headers=h).json() == []
 
@@ -143,7 +155,13 @@ def test_connector_lifecycle(client: TestClient, admin_headers: dict[str, str]) 
     staged = client.post(
         f"/api/connectors/{cid}/files",
         headers=admin_headers,
-        files={"file": ("accounts.txt", io.BytesIO(b"Key account: Wonka Industries, ARR $99,000, health 88. " * 20), "text/plain")},
+        files={
+            "file": (
+                "accounts.txt",
+                io.BytesIO(b"Key account: Wonka Industries, ARR $99,000, health 88. " * 20),
+                "text/plain",
+            )
+        },
     )
     assert staged.status_code == 201 and staged.json()["staged"] == "accounts.txt"
     s1 = client.post(f"/api/connectors/{cid}/sync", headers=admin_headers).json()
@@ -153,7 +171,9 @@ def test_connector_lifecycle(client: TestClient, admin_headers: dict[str, str]) 
     s2 = client.post(f"/api/connectors/{cid}/sync", headers=admin_headers).json()
     assert s2["note"] == "Up to date: 1 unchanged file(s)."
     ans = client.post(
-        "/api/ask", headers=admin_headers, json={"question": "What is the ARR of Wonka Industries?", "source_ids": [cid]}
+        "/api/ask",
+        headers=admin_headers,
+        json={"question": "What is the ARR of Wonka Industries?", "source_ids": [cid]},
     ).json()
     assert "Wonka" in ans["answer"]
     bad = client.post(
@@ -167,14 +187,21 @@ def test_connector_lifecycle(client: TestClient, admin_headers: dict[str, str]) 
 
 
 def test_connector_validation(client: TestClient, admin_headers: dict[str, str]) -> None:
-    assert client.post("/api/connectors", headers=admin_headers, json={"name": "X", "type": "telepathy"}).status_code == 400
+    assert (
+        client.post("/api/connectors", headers=admin_headers, json={"name": "X", "type": "telepathy"}).status_code
+        == 400
+    )
     assert client.post("/api/connectors", headers=admin_headers, json={"name": "", "type": "crm"}).status_code == 422
     assert client.post("/api/connectors", headers=admin_headers, json={"name": "   ", "type": "crm"}).status_code == 400
     assert client.post("/api/connectors/999/sync", headers=admin_headers).status_code == 404
-    doc = client.post("/api/sources/upload", headers=admin_headers, files={"file": ("d.txt", io.BytesIO(POLICY), "text/plain")})
+    doc = client.post(
+        "/api/sources/upload", headers=admin_headers, files={"file": ("d.txt", io.BytesIO(POLICY), "text/plain")}
+    )
     did = doc.json()["source_id"]
     assert client.post(f"/api/connectors/{did}/sync", headers=admin_headers).status_code == 404
-    staged = client.post(f"/api/connectors/{did}/files", headers=admin_headers, files={"file": ("a.txt", io.BytesIO(b"x"), "t")})
+    staged = client.post(
+        f"/api/connectors/{did}/files", headers=admin_headers, files={"file": ("a.txt", io.BytesIO(b"x"), "t")}
+    )
     assert staged.status_code == 400
     assert client.get("/api/sources/999", headers=admin_headers).status_code == 404
 
@@ -201,11 +228,18 @@ def test_team_management(client: TestClient, admin_headers: dict[str, str], memb
     assert member["role"] == "member" and member["temporary_password"]
     team = client.get("/api/team", headers=member["headers"]).json()
     assert [u["email"] for u in team] == ["admin@example.com", "member@example.com"]
-    assert client.post("/api/team/invite", headers=member["headers"], json={"email": "z@example.com"}).status_code == 403
+    assert (
+        client.post("/api/team/invite", headers=member["headers"], json={"email": "z@example.com"}).status_code == 403
+    )
     dup = client.post("/api/team/invite", headers=admin_headers, json={"email": "MEMBER@example.com"})
     assert dup.status_code == 409
     assert client.post("/api/team/invite", headers=admin_headers, json={"email": "nope"}).status_code == 400
-    assert client.post("/api/team/invite", headers=admin_headers, json={"email": "r@example.com", "role": "god"}).status_code == 400
+    assert (
+        client.post(
+            "/api/team/invite", headers=admin_headers, json={"email": "r@example.com", "role": "god"}
+        ).status_code
+        == 400
+    )
     promoted = client.patch(f"/api/team/{mid}", headers=admin_headers, json={"role": "admin", "name": "Mia"}).json()
     assert (promoted["role"], promoted["name"]) == ("admin", "Mia")
     me = client.get("/api/auth/me", headers=admin_headers).json()
@@ -319,7 +353,9 @@ def test_openai_compatible_mode_end_to_end(settings_factory: SettingsFactory, re
         assert fallback["warnings"]
 
 
-def test_openai_embeddings_provider_error_is_502(settings_factory: SettingsFactory, respx_mock: respx.MockRouter) -> None:
+def test_openai_embeddings_provider_error_is_502(
+    settings_factory: SettingsFactory, respx_mock: respx.MockRouter
+) -> None:
     respx_mock.route(host="testserver").pass_through()
     respx_mock.post("http://emb.example/v1/embeddings").mock(return_value=httpx.Response(401, text="no"))
     app = create_app(settings_factory(EMBEDDINGS="openai", EMBED_BASE_URL="http://emb.example/v1", LLM_MAX_RETRIES=0))

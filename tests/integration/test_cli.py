@@ -97,7 +97,9 @@ def test_sync_reports_errors_exit_code(env: Path, capsys: pytest.CaptureFixture[
 
 
 def test_create_admin(env: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch) -> None:
-    code, out, _ = run(capsys, "create-admin", "--email", "Ops@Example.com", "--name", "Ops", "--password", "ops-pass-123")
+    code, out, _ = run(
+        capsys, "create-admin", "--email", "Ops@Example.com", "--name", "Ops", "--password", "ops-pass-123"
+    )
     assert (code, out) == (0, "admin created: ops@example.com\n")
     code, _, err = run(capsys, "create-admin", "--email", "ops@example.com", "--password", "ops-pass-123")
     assert code == 2 and "already a member" in err

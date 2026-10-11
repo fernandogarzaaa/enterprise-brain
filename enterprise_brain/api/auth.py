@@ -55,9 +55,7 @@ def set_session_cookie(ctx: AppContext, response: Response, token: str) -> None:
     )
 
 
-def attempt_login(
-    ctx: AppContext, db: Session, request: Request, email: str, password: str
-) -> models.User | int:
+def attempt_login(ctx: AppContext, db: Session, request: Request, email: str, password: str) -> models.User | int:
     """Return the user, or the retry-after seconds when rate limited (0 = bad credentials)."""
     key = client_key(request, email)
     limiter = ctx.login_limiter
@@ -152,9 +150,7 @@ def change_password(
 ) -> Response:
     users.change_password(db, ctx.settings, user, payload.current_password, payload.new_password)
     token = make_token(ctx, user)
-    resp = JSONResponse(
-        {"detail": "Password changed. Other sessions were signed out.", "access_token": token}
-    )
+    resp = JSONResponse({"detail": "Password changed. Other sessions were signed out.", "access_token": token})
     set_session_cookie(ctx, resp, token)  # keep this session alive
     return resp
 

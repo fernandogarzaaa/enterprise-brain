@@ -130,9 +130,7 @@ class RateLimiter:
     is ``limit x workers``; put a reverse-proxy limit in front for strict guarantees.
     """
 
-    def __init__(
-        self, limit: int, window_seconds: float, clock: Callable[[], float] = time.monotonic
-    ) -> None:
+    def __init__(self, limit: int, window_seconds: float, clock: Callable[[], float] = time.monotonic) -> None:
         self.limit = limit
         self.window = window_seconds
         self._clock = clock

@@ -37,7 +37,7 @@ def test_fresh_migration_creates_schema(settings_factory: SettingsFactory) -> No
     run_migrations(s)  # idempotent
     engine = create_engine(s.DATABASE_URL)
     insp = inspect(engine)
-    assert TABLES <= set(insp.get_table_names())
+    assert set(insp.get_table_names()) >= TABLES
     with engine.connect() as conn:
         assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0001"
     fks = {fk["referred_table"]: fk["options"].get("ondelete") for fk in insp.get_foreign_keys("chunks")}
@@ -148,7 +148,7 @@ def test_upgrade_from_beta_database(settings_factory: SettingsFactory) -> None:
     app = create_app(s)  # AUTO_MIGRATE upgrades the beta schema in place
     engine = create_engine(s.DATABASE_URL)
     insp = inspect(engine)
-    assert TABLES <= set(insp.get_table_names())
+    assert set(insp.get_table_names()) >= TABLES
     assert {"is_active", "token_version", "last_login_at"} <= {c["name"] for c in insp.get_columns("users")}
     with engine.connect() as conn:
         email, active, ver = conn.execute(text("SELECT email, is_active, token_version FROM users")).one()

@@ -180,7 +180,7 @@ def test_extract_bad_json_raises() -> None:
 
 
 def test_extract_unsupported() -> None:
-    with pytest.raises(IngestError, match="Unsupported file type: .exe"):
+    with pytest.raises(IngestError, match=r"Unsupported file type: \.exe"):
         extract_text(b"MZ", ".exe")
     with pytest.raises(IngestError, match=r"\(none\)"):
         extract_text(b"x", "")
@@ -215,7 +215,7 @@ def test_extract_pdf() -> None:
 
 
 def test_extract_corrupt_pdf_raises() -> None:
-    with pytest.raises(IngestError, match="Could not read .pdf file"):
+    with pytest.raises(IngestError, match=r"Could not read \.pdf file"):
         extract_text(b"%PDF-garbage", ".pdf")
 
 

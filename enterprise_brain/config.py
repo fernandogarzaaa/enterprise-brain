@@ -210,9 +210,7 @@ class Settings(BaseSettings):
             "Database": db,
             "Upload directory": str(self.upload_dir),
             "Connector staging directory": str(self.staging_dir),
-            "Background sync": (
-                f"every {self.SYNC_INTERVAL_MINUTES} min" if self.SYNC_INTERVAL_MINUTES else "off"
-            ),
+            "Background sync": (f"every {self.SYNC_INTERVAL_MINUTES} min" if self.SYNC_INTERVAL_MINUTES else "off"),
             "Max upload size": f"{self.MAX_UPLOAD_MB} MB",
         }
 

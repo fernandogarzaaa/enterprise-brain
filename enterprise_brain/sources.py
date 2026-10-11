@@ -81,9 +81,7 @@ def create_document_source(
 ) -> models.Source:
     """Store an uploaded file as a new document source and index it (commits)."""
     clean = validate_upload(filename, data, settings)
-    source = models.Source(
-        name=validate_name(name or clean), kind="document", status="ready", created_by_id=user_id
-    )
+    source = models.Source(name=validate_name(name or clean), kind="document", status="ready", created_by_id=user_id)
     db.add(source)
     db.flush()
     dest_dir = upload_dir_for(settings, source)
@@ -156,10 +154,7 @@ def sync_connector(db: Session, settings: Settings, embedder: Embedder, source: 
     db.commit()
 
     result = SyncResult()
-    existing = {
-        d.filename: d
-        for d in db.query(models.Document).filter(models.Document.source_id == source.id).all()
-    }
+    existing = {d.filename: d for d in db.query(models.Document).filter(models.Document.source_id == source.id).all()}
     seen: set[str] = set()
     for path in sorted(sdir.iterdir()):
         if not path.is_file() or path.suffix.lower() not in ALLOWED_SUFFIXES:

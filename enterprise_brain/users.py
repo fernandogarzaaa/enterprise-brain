@@ -163,8 +163,7 @@ def ensure_admin(db: Session, settings: Settings) -> models.User | None:
     password = settings.ADMIN_PASSWORD.get_secret_value()
     if not settings.ADMIN_EMAIL or not password:
         log.warning(
-            "no users exist and ADMIN_EMAIL/ADMIN_PASSWORD are not set; "
-            "create one with `enterprise-brain create-admin`"
+            "no users exist and ADMIN_EMAIL/ADMIN_PASSWORD are not set; create one with `enterprise-brain create-admin`"
         )
         return None
     user = create_user(
@@ -223,11 +222,7 @@ def user_for_api_key(db: Session, value: str) -> models.User | None:
 
 
 def revoke_api_key(db: Session, user: models.User, key_id: int) -> None:
-    key = (
-        db.query(models.ApiKey)
-        .filter(models.ApiKey.id == key_id, models.ApiKey.user_id == user.id)
-        .one_or_none()
-    )
+    key = db.query(models.ApiKey).filter(models.ApiKey.id == key_id, models.ApiKey.user_id == user.id).one_or_none()
     if key is None:
         raise UserError("API key not found", status=404)
     if key.revoked_at is None:
