@@ -9,7 +9,6 @@ import httpx
 import pytest
 import respx
 
-from enterprise_brain import llm
 from enterprise_brain.llm import (
     HashedEmbedder,
     LLMError,
@@ -216,7 +215,7 @@ def test_openai_chat_malformed(response: httpx.Response, message: str) -> None:
 
 def test_post_json_backoff_schedule(monkeypatch: pytest.MonkeyPatch) -> None:
     sleeps: list[float] = []
-    monkeypatch.setattr(llm.time, "sleep", sleeps.append)
+    monkeypatch.setattr("enterprise_brain.llm.time.sleep", sleeps.append)
     transport = httpx.MockTransport(lambda r: httpx.Response(500))
     with httpx.Client(transport=transport) as c, pytest.raises(LLMError, match="3 attempts"):
         post_json_with_retries(c, "https://x/y", {}, {}, max_retries=2, backoff_seconds=1.5)
@@ -225,7 +224,7 @@ def test_post_json_backoff_schedule(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_post_json_zero_retries_no_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
     sleeps: list[float] = []
-    monkeypatch.setattr(llm.time, "sleep", sleeps.append)
+    monkeypatch.setattr("enterprise_brain.llm.time.sleep", sleeps.append)
     transport = httpx.MockTransport(lambda r: httpx.Response(200, json={"ok": True}))
     with httpx.Client(transport=transport) as c:
         assert post_json_with_retries(c, "https://x/y", {}, {}, 0, 5) == {"ok": True}

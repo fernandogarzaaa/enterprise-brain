@@ -12,7 +12,7 @@ STRONG = "k" * 48
 
 
 def make(**kw: Any) -> Settings:
-    return Settings(_env_file=None, **kw)  # type: ignore[call-arg]
+    return Settings(_env_file=None, **kw)
 
 
 def test_defaults() -> None:

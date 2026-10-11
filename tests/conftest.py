@@ -55,7 +55,7 @@ def make_settings(tmp_path: Path, **overrides: Any) -> Settings:
         "LOG_LEVEL": "WARNING",
     }
     values.update(overrides)
-    return Settings(_env_file=None, **values)  # type: ignore[call-arg]
+    return Settings(_env_file=None, **values)
 
 
 @pytest.fixture(autouse=True)

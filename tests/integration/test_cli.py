@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +19,7 @@ from tests.conftest import PG_URL, SettingsFactory
 
 
 @pytest.fixture
-def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("DATABASE_URL", PG_URL or f"sqlite:///{tmp_path / 'cli.db'}")
     monkeypatch.setenv("DATA_DIR", str(tmp_path / "data"))
@@ -109,11 +110,11 @@ def test_create_admin(env: Path, capsys: pytest.CaptureFixture[str], monkeypatch
     assert run(capsys, "create-admin", "--email", "env@example.com")[0] == 0
     monkeypatch.delenv("EB_NEW_ADMIN_PASSWORD")
     answers = iter(["typed-pass-123", "different-123"])
-    monkeypatch.setattr(cli.getpass, "getpass", lambda prompt="": next(answers))
+    monkeypatch.setattr("getpass.getpass", lambda prompt="": next(answers))
     code, _, err = run(capsys, "create-admin", "--email", "typed@example.com")
     assert code == 2 and "do not match" in err
     same = iter(["typed-pass-123", "typed-pass-123"])
-    monkeypatch.setattr(cli.getpass, "getpass", lambda prompt="": next(same))
+    monkeypatch.setattr("getpass.getpass", lambda prompt="": next(same))
     assert run(capsys, "create-admin", "--email", "typed@example.com")[0] == 0
 
 

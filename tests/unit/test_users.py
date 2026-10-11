@@ -35,14 +35,11 @@ def test_bootstrap_admin_created(ctx: AppContext, db: Session) -> None:
 
 
 def test_bootstrap_skipped_without_credentials(settings_factory: object, db: Session) -> None:
-    from tests.conftest import make_settings
-
     s: Settings = settings_factory(ADMIN_EMAIL="", ADMIN_PASSWORD="")  # type: ignore[operator]
     db.query(models.User).delete()
     db.commit()
     assert users.ensure_admin(db, s) is None
     assert db.query(models.User).count() == 0
-    assert make_settings  # imported helper is available
 
 
 def test_create_user_rules(ctx: AppContext, db: Session) -> None:
@@ -117,7 +114,9 @@ def test_update_member_guards(ctx: AppContext, db: Session) -> None:
     users.update_member(db, m, a, is_active=False)  # already inactive: no extra bump
     assert a.token_version == 1
     users.update_member(db, m, a, is_active=True)
-    assert a.is_active is True and a.token_version == 1
+    reactivated = admin(db)
+    assert reactivated.is_active is True
+    assert reactivated.token_version == 1
 
 
 def test_last_admin_cannot_be_deactivated_by_other(ctx: AppContext, db: Session) -> None:
