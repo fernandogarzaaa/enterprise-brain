@@ -156,7 +156,10 @@ def sync_connector(db: Session, settings: Settings, embedder: Embedder, source: 
     db.commit()
 
     result = SyncResult()
-    existing = {d.filename: d for d in source.documents}
+    existing = {
+        d.filename: d
+        for d in db.query(models.Document).filter(models.Document.source_id == source.id).all()
+    }
     seen: set[str] = set()
     for path in sorted(sdir.iterdir()):
         if not path.is_file() or path.suffix.lower() not in ALLOWED_SUFFIXES:

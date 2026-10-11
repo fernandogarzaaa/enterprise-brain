@@ -98,11 +98,11 @@ def test_extractive_filters_short_fragment_heading_and_dupes() -> None:
 
 
 def test_extractive_adds_period_and_respects_max() -> None:
-    hits = [(chunk(1, 1, "Acme invoice one is overdue now. Acme invoice two is overdue now! Acme invoice three"), 0.9)]
+    hits = [(chunk(1, 1, "Acme invoice one is overdue now. Acme invoice two is overdue now! Acme invoice three remains unpaid today"), 0.9)]
     answer, _ = extractive_answer("acme invoice overdue", hits, NAMES, max_sentences=1)
     assert answer == "Acme invoice one is overdue now. [1]"
     answer3, _ = extractive_answer("acme invoice three", hits, {1: "X"}, max_sentences=5)
-    assert "Acme invoice three. [1]" in answer3
+    assert answer3.startswith("Acme invoice three remains unpaid today. [1]")
     assert "Acme invoice two is overdue now! [1]" in answer3
 
 

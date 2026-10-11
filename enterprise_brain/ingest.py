@@ -198,7 +198,7 @@ def store_document(
     )
     if doc is None:
         doc = models.Document(source_id=source.id, filename=filename)
-        db.add(doc)
+        source.documents.append(doc)  # keep the loaded collection in sync
     else:
         db.execute(delete(models.Chunk).where(models.Chunk.document_id == doc.id))
     doc.sha256 = sha256_bytes(data)
