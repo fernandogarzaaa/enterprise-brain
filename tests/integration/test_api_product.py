@@ -9,6 +9,7 @@ import httpx
 import respx
 from fastapi.testclient import TestClient
 
+import enterprise_brain
 from enterprise_brain.main import create_app
 from tests.conftest import SettingsFactory, login
 
@@ -291,7 +292,9 @@ def test_pages_render(demo_client: TestClient, demo_headers: dict[str, str]) -> 
         r = demo_client.get(path, headers=demo_headers)
         assert r.status_code == 200, path
         assert marker in r.text, path
-        assert "v1.0.0" in r.text
+        assert f"v{enterprise_brain.__version__}" in r.text
+        assert 'aria-current="page"' in r.text, path  # active nav item is announced
+        assert "Skip to content" in r.text
         assert "cdn." not in r.text  # no third-party CDNs in production pages
     assert "Acme contract?" in demo_client.get("/", headers=demo_headers).text
     assert demo_client.get("/static/app.css").status_code == 200

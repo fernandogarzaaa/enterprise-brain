@@ -4,6 +4,26 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-10-13
+
+### Fixed
+- Web UI on phones: the fixed-width sidebar left ~135px for content on a
+  375px screen. Below 768px the sidebar now stacks above the page and the
+  nav scrolls horizontally.
+- Ask page: a network failure no longer leaves the page silent (shows a
+  "could not reach the server" message), and FastAPI validation errors are
+  shown as text instead of `[object Object]`.
+- Accessibility: form fields that only had placeholders (question box,
+  upload, connector, password, API key, invite) have accessible names; the
+  active nav item has `aria-current="page"`; skip-to-content link; the
+  answer card is announced (`aria-live`).
+- `.env.example` uses a placeholder `POSTGRES_PASSWORD` instead of a
+  generated-looking value (#19).
+
+### Changed
+- Dependency updates (python-deps group, #16); CI also runs on pushes to
+  `main` (#17).
+
 ## [1.0.0] - 2026-10-11
 
 First production release. The 0.x beta is upgraded in place on first start.
