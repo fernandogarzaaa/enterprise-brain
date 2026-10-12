@@ -4,6 +4,7 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
+import enterprise_brain
 from enterprise_brain.deps import COOKIE_NAME
 from enterprise_brain.main import create_app
 from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, SettingsFactory, login
@@ -12,9 +13,9 @@ from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, SettingsFactory, login
 def test_health_ready_version(client: TestClient) -> None:
     r = client.get("/api/health")
     assert r.status_code == 200
-    assert r.json() == {"status": "ok", "app": "Enterprise Brain", "version": "1.0.0"}
+    assert r.json() == {"status": "ok", "app": "Enterprise Brain", "version": enterprise_brain.__version__}
     assert client.get("/api/health/ready").json() == {"status": "ok", "database": "ok"}
-    assert client.get("/api/version").json() == {"version": "1.0.0"}
+    assert client.get("/api/version").json() == {"version": enterprise_brain.__version__}
 
 
 def test_security_headers_and_request_id(client: TestClient) -> None:

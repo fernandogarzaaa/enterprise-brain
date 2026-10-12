@@ -8,8 +8,8 @@
   <div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
     <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">Change password</h2>
     <form id="pw-form" class="space-y-3">
-      <input id="pw-current" type="password" required autocomplete="current-password" placeholder="Current password" class="w-full text-sm border border-stone-200 rounded-xl px-3 py-2">
-      <input id="pw-new" type="password" required autocomplete="new-password" placeholder="New password" class="w-full text-sm border border-stone-200 rounded-xl px-3 py-2">
+      <input id="pw-current" type="password" aria-label="Current password" required autocomplete="current-password" placeholder="Current password" class="w-full text-sm border border-stone-200 rounded-xl px-3 py-2">
+      <input id="pw-new" type="password" aria-label="New password" required autocomplete="new-password" placeholder="New password" class="w-full text-sm border border-stone-200 rounded-xl px-3 py-2">
       <button class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-xl">Update password</button>
     </form>
     <p id="pw-msg" class="text-xs text-stone-500 mt-2"></p>
@@ -19,7 +19,7 @@
     <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">API keys</h2>
     <p class="text-xs text-stone-400 mb-3">Use a key with <code class="bg-stone-100 px-1 rounded">X-API-Key: eb_...</code> or <code class="bg-stone-100 px-1 rounded">Authorization: Bearer eb_...</code>. Keys act as you.</p>
     <form id="key-form" class="flex gap-3">
-      <input id="key-name" type="text" maxlength="100" required placeholder="Key name, e.g. Slack bot" class="flex-1 text-sm border border-stone-200 rounded-xl px-3 py-2">
+      <input id="key-name" type="text" aria-label="API key name" maxlength="100" required placeholder="Key name, e.g. Slack bot" class="flex-1 text-sm border border-stone-200 rounded-xl px-3 py-2">
       <button class="bg-stone-900 hover:bg-stone-700 text-white text-sm font-medium px-4 py-2 rounded-xl">Create</button>
     </form>
     <p id="key-msg" class="text-xs text-stone-500 mt-2 break-all"></p>
