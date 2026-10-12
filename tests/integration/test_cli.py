@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+import enterprise_brain
 from enterprise_brain import cli
 from enterprise_brain.config import get_settings
 from enterprise_brain.deps import AppContext
@@ -44,7 +45,7 @@ def test_version(capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit) as e:
         cli.main(["--version"])
     assert e.value.code == 0
-    assert "enterprise-brain 1.0.0" in capsys.readouterr().out
+    assert f"enterprise-brain {enterprise_brain.__version__}" in capsys.readouterr().out
 
 
 def test_requires_command(capsys: pytest.CaptureFixture[str]) -> None:
