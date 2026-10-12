@@ -19,7 +19,7 @@ certifi==2026.7.22
     #   httpx
 click==8.5.0
     # via uvicorn
-fastapi==0.142.2
+fastapi==0.143.0
     # via enterprise-brain (pyproject.toml)
 h11==0.16.0
     # via
@@ -49,16 +49,16 @@ numpy==2.4.6
     # via enterprise-brain (pyproject.toml)
 opentelemetry-api==1.45.1
     # via fastapi
-psycopg2-binary==2.9.11
+psycopg2-binary==2.9.13
     # via enterprise-brain (pyproject.toml)
-pydantic==2.13.5
+pydantic==2.14.0
     # via
     #   enterprise-brain (pyproject.toml)
     #   fastapi
     #   pydantic-settings
-pydantic-core==2.46.5
+pydantic-core==2.50.0
     # via pydantic
-pydantic-settings==2.11.0
+pydantic-settings==2.15.0
     # via enterprise-brain (pyproject.toml)
 pyjwt==2.15.1
     # via enterprise-brain (pyproject.toml)
