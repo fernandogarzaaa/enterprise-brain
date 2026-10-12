@@ -5,27 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ app_name }}{% endblock %}</title>
   <link rel="stylesheet" href="/static/app.css">
+  <style>
+    /* Narrow screens: the fixed 15rem sidebar left ~135px for content on a
+       375px phone. Stack it on top and let the nav scroll sideways. */
+    @media (max-width: 767px) {
+      .app-shell { flex-direction: column; }
+      .app-side { width: 100%; border-right: 0; border-bottom: 1px solid #e7e5e4; }
+      .app-side nav { display: flex; overflow-x: auto; gap: .25rem; padding-top: .5rem; padding-bottom: .5rem; }
+      .app-side nav > * { margin-block: 0; white-space: nowrap; }
+      .app-main > div { padding-left: 1rem; padding-right: 1rem; }
+    }
+    .skip-link { position: absolute; left: -999px; }
+    .skip-link:focus { left: .5rem; top: .5rem; z-index: 50; background: #fff; padding: .5rem .75rem; border-radius: .5rem; }
+  </style>
   {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-stone-100 text-stone-900">
-<div class="flex min-h-screen">
-  <aside class="w-60 shrink-0 bg-white border-r border-stone-200 flex flex-col">
+<a href="#main" class="skip-link">Skip to content</a>
+<div class="flex min-h-screen app-shell">
+  <aside class="app-side w-60 shrink-0 bg-white border-r border-stone-200 flex flex-col">
     <div class="px-5 py-4 border-b border-stone-200">
       <div class="text-lg font-bold tracking-tight">
         <span class="text-orange-600">&#9632;</span> {{ app_name }}
       </div>
       <div class="text-xs text-stone-500">v{{ version }}</div>
     </div>
-    <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
+    <nav class="flex-1 px-3 py-4 space-y-1 text-sm" aria-label="Main">
       {% for href, label in nav %}
-      <a href="{{ href }}" class="block px-3 py-2 rounded-lg {{ 'bg-orange-100 text-orange-800 font-medium' if href == active else 'text-stone-600 hover:bg-stone-100' }}">{{ label }}</a>
+      <a href="{{ href }}"{% if href == active %} aria-current="page"{% endif %} class="block px-3 py-2 rounded-lg {{ 'bg-orange-100 text-orange-800 font-medium' if href == active else 'text-stone-600 hover:bg-stone-100' }}">{{ label }}</a>
       {% endfor %}
     </nav>
     <div class="px-5 py-4 border-t border-stone-200 text-xs text-stone-500">
       {% if user %}{{ user.email }} &middot; {{ user.role }}<br><a href="/logout" class="text-orange-600 hover:underline">Sign out</a>{% endif %}
     </div>
   </aside>
-  <main class="flex-1 min-w-0">
+  <main id="main" class="app-main flex-1 min-w-0">
     <div class="max-w-7xl mx-auto px-6 py-6">
       {% block content %}{% endblock %}
     </div>

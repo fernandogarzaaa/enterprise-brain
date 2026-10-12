@@ -9,7 +9,7 @@
     <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">Upload document</h2>
     <p class="text-xs text-stone-400 mb-3">PDF, Word (.docx), TXT, Markdown, CSV, HTML or JSON, up to {{ max_upload_mb }} MB. Indexed immediately.</p>
     <form id="upload-form" class="flex items-center gap-3">
-      <input id="file-input" type="file" accept=".pdf,.docx,.txt,.md,.csv,.html,.htm,.json" class="text-sm flex-1">
+      <input id="file-input" type="file" aria-label="Document to upload" accept=".pdf,.docx,.txt,.md,.csv,.html,.htm,.json" class="text-sm flex-1">
       <button class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-xl">Upload</button>
     </form>
     <p id="upload-msg" class="text-xs text-stone-500 mt-2"></p>
@@ -19,8 +19,8 @@
     <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">Add connector</h2>
     <p class="text-xs text-stone-400 mb-3">A connector indexes the exports you upload to it (or drop into its staging folder on the server). Sync is incremental: unchanged files are skipped and removed files are unindexed.</p>
     <form id="connector-form" class="flex items-center gap-3">
-      <input id="conn-name" type="text" maxlength="255" placeholder="Connector name" class="text-sm border border-stone-200 rounded-xl px-3 py-2 flex-1">
-      <select id="conn-type" class="text-sm border border-stone-200 rounded-xl px-3 py-2">
+      <input id="conn-name" type="text" aria-label="Connector name" maxlength="255" placeholder="Connector name" class="text-sm border border-stone-200 rounded-xl px-3 py-2 flex-1">
+      <select id="conn-type" aria-label="Connector type" class="text-sm border border-stone-200 rounded-xl px-3 py-2">
         {% for t, label in connector_labels.items() %}<option value="{{ t }}">{{ label }}</option>{% endfor %}
       </select>
       <button class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-xl">Add</button>
@@ -53,7 +53,7 @@
     <div class="flex flex-wrap gap-2 mt-3">
       {% if s.kind == 'connector' %}
       <label class="text-xs px-3 py-1.5 rounded-lg border border-stone-200 hover:bg-stone-100 cursor-pointer">Add file
-        <input type="file" class="stage-input hidden" data-id="{{ s.id }}" accept=".pdf,.docx,.txt,.md,.csv,.html,.htm,.json">
+        <input type="file" aria-label="Replace document file" class="stage-input hidden" data-id="{{ s.id }}" accept=".pdf,.docx,.txt,.md,.csv,.html,.htm,.json">
       </label>
       <button class="sync-btn text-xs px-3 py-1.5 rounded-lg bg-stone-900 text-white hover:bg-stone-700" data-id="{{ s.id }}">Sync now</button>
       {% endif %}
