@@ -92,7 +92,7 @@ pygments==2.21.0
     # via pytest
 pyjwt==2.15.1
     # via enterprise-brain (pyproject.toml)
-pypdf==6.20.0
+pypdf==6.21.2
     # via enterprise-brain (pyproject.toml)
 pyproject-hooks==1.3.3
     # via build
