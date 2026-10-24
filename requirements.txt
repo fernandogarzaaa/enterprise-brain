@@ -62,7 +62,7 @@ pydantic-settings==2.15.0
     # via enterprise-brain (pyproject.toml)
 pyjwt==2.15.1
     # via enterprise-brain (pyproject.toml)
-pypdf==6.19.0
+pypdf==6.21.2
     # via enterprise-brain (pyproject.toml)
 python-docx==1.2.0
     # via enterprise-brain (pyproject.toml)
