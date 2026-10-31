@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.12-slim AS build
+FROM python:3.15-slim AS build
 WORKDIR /src
 ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 COPY requirements.txt ./
@@ -8,7 +8,7 @@ COPY pyproject.toml README.md LICENSE ./
 COPY enterprise_brain ./enterprise_brain
 RUN pip wheel --no-deps --wheel-dir /wheels .
 
-FROM python:3.12-slim
+FROM python:3.15-slim
 LABEL org.opencontainers.image.title="Enterprise Brain" \
       org.opencontainers.image.source="https://github.com/fernandogarzaaa/enterprise-brain" \
       org.opencontainers.image.licenses="MIT"
