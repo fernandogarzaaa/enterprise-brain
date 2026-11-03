@@ -19,7 +19,7 @@ bcrypt==5.0.0
     # via enterprise-brain (pyproject.toml)
 build==1.6.1
     # via enterprise-brain (pyproject.toml)
-certifi==2026.7.22
+certifi==2026.10.18
     # via
     #   httpcore
     #   httpx
