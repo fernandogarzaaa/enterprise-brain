@@ -65,7 +65,7 @@ mypy-extensions==1.1.0
     # via mypy
 numpy==2.4.6
     # via enterprise-brain (pyproject.toml)
-opentelemetry-api==1.45.1
+opentelemetry-api==1.45.2
     # via fastapi
 packaging==26.3
     # via
